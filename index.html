@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PideClaro — Solicitudes de Acceso a la Información Pública</title>
+<style>
+  :root {
+    --primary: #d62828;
+    --primary-dark: #a81f1f;
+    --bg: #f7f5f2;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --border: #e3e0db;
+    --success: #2e7d32;
+    --success-bg: #e8f5e9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  header h1 {
+    font-size: 28px;
+    margin: 0 0 4px;
+    color: var(--primary);
+  }
+  header p {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 14px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .step-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--primary);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .card h2 {
+    font-size: 18px;
+    margin: 0 0 18px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    margin-top: 14px;
+    color: #333;
+  }
+  label:first-of-type { margin-top: 0; }
+  textarea, input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  textarea:focus, input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 14px;
+  }
+  @media (max-width: 520px) {
+    .grid2 { grid-template-columns: 1fr; }
+  }
+  button {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+    transition: background 0.15s;
+  }
+  button:hover { background: var(--primary-dark); }
+  button:disabled { background: #c9c4bd; cursor: not-allowed; }
+  button.secondary {
+    background: #fff;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+  }
+  button.secondary:hover { background: #fdf2f2; }
+  .row-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .row-buttons button { margin-top: 0; }
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 14px 0;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .result-field {
+    margin-bottom: 16px;
+  }
+  .result-field .f-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .result-field .f-value {
+    font-size: 14px;
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    white-space: pre-wrap;
+  }
+  .result-field textarea.f-value-edit {
+    width: 100%;
+    min-height: 240px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: inherit;
+  }
+  .warning-box {
+    background: #fff8e1;
+    border: 1px solid #ffd54f;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    color: #6d5300;
+  }
+  .success-box {
+    background: var(--success-bg);
+    border: 1px solid #a5d6a7;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+  .success-box .icon { font-size: 36px; margin-bottom: 8px; }
+  .success-box h3 { margin: 0 0 6px; color: var(--success); }
+  .success-box p { margin: 0 0 16px; font-size: 13px; color: #444; }
+  .gmail-btn {
+    display: inline-block;
+    background: var(--success);
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .gmail-btn:hover { background: #245a27; }
+  .hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+  .error-box {
+    background: #fdecea;
+    border: 1px solid #f5b7b1;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #a33;
+    margin-top: 14px;
+  }
+  .status-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #eee;
+    color: #555;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .status-pill.ok { background: #e8f5e9; color: #2e7d32; }
+  .hidden { display: none !important; }
+
+  /* Audio recorder */
+  .input-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    width: fit-content;
+  }
+  .input-toggle button {
+    width: auto;
+    margin: 0;
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 0;
+    background: #fff;
+    color: var(--text-muted);
+    border-right: 1px solid var(--border);
+  }
+  .input-toggle button:last-child { border-right: none; }
+  .input-toggle button.active {
+    background: var(--primary);
+    color: #fff;
+  }
+  .input-toggle button:hover { background: #f3f3f3; }
+  .input-toggle button.active:hover { background: var(--primary-dark); }
+
+  .recorder-box {
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    text-align: center;
+    background: #fafafa;
+  }
+  .mic-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-size: 24px;
+    border: none;
+    cursor: pointer;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .mic-btn:hover { background: var(--primary-dark); }
+  .mic-btn.recording {
+    background: #b71c1c;
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(183,28,28,0.45); }
+    70% { box-shadow: 0 0 0 14px rgba(183,28,28,0); }
+    100% { box-shadow: 0 0 0 0 rgba(183,28,28,0); }
+  }
+  .rec-status {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .rec-timer {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  audio.rec-playback {
+    width: 100%;
+    margin-top: 12px;
+  }
+  .rec-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .rec-actions button {
+    width: auto;
+    margin: 0;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>PideClaro</h1>
+    <p>Solicitudes de Acceso a la Información Pública · Ley N.° 27806</p>
+  </header>
+
+  <!-- PASO 1: FORMULARIO DE PEDIDO -->
+  <div class="card" id="step1">
+    <span class="step-label">Paso 1</span>
+    <h2>Cuéntanos qué información necesitas pedir</h2>
+
+    <label for="pedido">¿Qué información estás buscando?</label>
+    <textarea id="pedido" placeholder="Ej: Necesito información sobre casos de dengue en Puno durante 2023 y 2024"></textarea>
+
+    <div class="grid2">
+      <div>
+        <label for="nombre">Nombre completo</label>
+        <input type="text" id="nombre" placeholder="Mayté Ciriaco Ruiz">
+      </div>
+      <div>
+        <label for="dni">DNI</label>
+        <input type="text" id="dni" placeholder="12345678">
+      </div>
+    </div>
+
+    <label for="domicilio">Domicilio</label>
+    <input type="text" id="domicilio" placeholder="Av. Ejemplo 123, Lima">
+
+    <label for="correo">Correo de contacto</label>
+    <input type="email" id="correo" placeholder="tu@correo.com">
+
+    <button id="btnGenerar" onclick="generarSolicitud()">Generar solicitud legal</button>
+
+    <div id="loading1" class="loading hidden">
+      <div class="spinner"></div>
+      <span>Generando tu solicitud con IA, esto puede tardar unos segundos...</span>
+    </div>
+    <div id="error1" class="error-box hidden"></div>
+  </div>
+
+  <!-- PASO 2: REVISAR RESULTADO -->
+  <div class="card hidden" id="step2">
+    <span class="step-label">Paso 2</span>
+    <h2>Revisa tu solicitud <span class="status-pill" id="statusPill">generada</span></h2>
+
+    <div id="warningBox" class="warning-box hidden"></div>
+
+    <div class="result-field">
+      <div class="f-label">Entidad</div>
+      <div class="f-value" id="r_entidad"></div>
+    </div>
+    <div class="result-field">
+      <div class="f-label">Correo de la entidad</div>
+      <div class="f-value" id="r_correo_entidad"></div>
+    </div>
+    <div class="result-field">
+      <div class="f-label">Asunto del correo</div>
+      <div class="f-value" id="r_asunto_correo"></div>
+    </div>
+    <div class="result-field">
+      <div class="f-label">Texto legal (editable)</div>
+      <textarea class="f-value-edit" id="r_texto_legal"></textarea>
+      <div class="hint">Puedes editar el texto antes de confirmar.</div>
+    </div>
+
+    <div class="row-buttons">
+      <button class="secondary" onclick="volverAEditar()">← Editar datos</button>
+      <button onclick="confirmarYGuardar()">Confirmar y guardar</button>
+    </div>
+
+    <div id="loading2" class="loading hidden">
+      <div class="spinner"></div>
+      <span>Guardando en Airtable y generando enlace de envío...</span>
+    </div>
+    <div id="error2" class="error-box hidden"></div>
+  </div>
+
+  <!-- PASO 3: ÉXITO -->
+  <div class="card hidden" id="step3">
+    <span class="step-label">Paso 3</span>
+    <div class="success-box">
+      <div class="icon">✅</div>
+      <h3>¡Solicitud guardada!</h3>
+      <p>Tu solicitud quedó registrada. Abre Gmail con el correo ya redactado para enviarlo a la entidad.</p>
+      <a id="btnGmail" class="gmail-btn" href="#" target="_blank">Abrir en Gmail →</a>
+    </div>
+    <div style="text-align:center; margin-top:16px;">
+      <button class="secondary" style="width:auto;" onclick="reiniciar()">Hacer otra solicitud</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const WEBHOOK_RAMA1 = 'https://n8npucp.fernandorh.com/webhook/pideclaro-recibir-solicitud';
+const WEBHOOK_RAMA2 = 'https://n8npucp.fernandorh.com/webhook/pideclaro-guardar-seguimiento-v2';
+
+let resultadoActual = null;
+let datosUsuario = null;
+
+// --- Grabador de audio ---
+let modoActual = 'texto';
+let mediaRecorder = null;
+let audioChunks = [];
+let audioBase64 = null;
+let recTimerInterval = null;
+let recSeconds = 0;
+
+function cambiarModo(modo) {
+  modoActual = modo;
+  document.getElementById('btnModoTexto').classList.toggle('active', modo === 'texto');
+  document.getElementById('btnModoAudio').classList.toggle('active', modo === 'audio');
+  document.getElementById('modoTexto').classList.toggle('hidden', modo !== 'texto');
+  document.getElementById('modoAudio').classList.toggle('hidden', modo !== 'audio');
+}
+
+async function toggleGrabacion() {
+  const micBtn = document.getElementById('micBtn');
+  const recStatus = document.getElementById('recStatus');
+  const recTimer = document.getElementById('recTimer');
+
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    // Detener grabación
+    mediaRecorder.stop();
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      clearInterval(recTimerInterval);
+
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // Resultado tipo "data:audio/webm;base64,XXXX" — separamos solo el base64 puro
+        audioBase64 = reader.result.split(',')[1];
+
+        const playback = document.getElementById('recPlayback');
+        playback.src = URL.createObjectURL(blob);
+        playback.classList.remove('hidden');
+        document.getElementById('recActions').classList.remove('hidden');
+        recStatus.textContent = 'Audio grabado. Puedes escucharlo o grabar de nuevo.';
+        recTimer.classList.add('hidden');
+      };
+      reader.readAsDataURL(blob);
+
+      micBtn.classList.remove('recording');
+      micBtn.textContent = '🎙️';
+    };
+
+    mediaRecorder.start();
+    micBtn.classList.add('recording');
+    micBtn.textContent = '⏹️';
+    recStatus.textContent = 'Grabando... toca para detener';
+    recSeconds = 0;
+    recTimer.textContent = '00:00';
+    recTimer.classList.remove('hidden');
+    recTimerInterval = setInterval(() => {
+      recSeconds++;
+      const m = String(Math.floor(recSeconds / 60)).padStart(2, '0');
+      const s = String(recSeconds % 60).padStart(2, '0');
+      recTimer.textContent = `${m}:${s}`;
+    }, 1000);
+
+  } catch (e) {
+    recStatus.textContent = 'No se pudo acceder al micrófono: ' + e.message;
+  }
+}
+
+function descartarAudio() {
+  audioBase64 = null;
+  document.getElementById('recPlayback').classList.add('hidden');
+  document.getElementById('recActions').classList.add('hidden');
+  document.getElementById('recStatus').textContent = 'Toca el micrófono para empezar a grabar';
+}
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+async function generarSolicitud() {
+  const pedido = document.getElementById('pedido').value.trim();
+  const nombre = document.getElementById('nombre').value.trim();
+  const dni = document.getElementById('dni').value.trim();
+  const domicilio = document.getElementById('domicilio').value.trim();
+  const correo = document.getElementById('correo').value.trim();
+
+  hide('error1');
+
+  // Validación según el modo de entrada
+  if (modoActual === 'texto' && !pedido) {
+    const err = document.getElementById('error1');
+    err.textContent = 'Por favor escribe qué información necesitas.';
+    show('error1');
+    return;
+  }
+  if (modoActual === 'audio' && !audioBase64) {
+    const err = document.getElementById('error1');
+    err.textContent = 'Por favor grava un audio con tu pedido antes de continuar.';
+    show('error1');
+    return;
+  }
+  if (!nombre || !dni || !domicilio || !correo) {
+    const err = document.getElementById('error1');
+    err.textContent = 'Por favor completa todos los campos antes de continuar.';
+    show('error1');
+    return;
+  }
+
+  datosUsuario = { pedido: modoActual === 'texto' ? pedido : '(enviado por audio)', nombre, dni, domicilio, correo };
+
+  document.getElementById('btnGenerar').disabled = true;
+  show('loading1');
+
+  // Body distinto según si es texto o audio
+  const body = modoActual === 'texto'
+    ? {
+        tipo_input: 'texto',
+        contenido: pedido,
+        nombre: nombre,
+        dni: dni,
+        domicilio: domicilio,
+        correo_contacto: correo
+      }
+    : {
+        tipo_input: 'audio',
+        contenido: audioBase64,
+        nombre: nombre,
+        dni: dni,
+        domicilio: domicilio,
+        correo_contacto: correo
+      };
+
+  try {
+    const resp = await fetch(WEBHOOK_RAMA1, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) {
+      throw new Error('El servidor respondió con error ' + resp.status);
+    }
+
+    const data = await resp.json();
+    resultadoActual = data;
+
+    document.getElementById('r_entidad').textContent = data.entidad || '(no detectada)';
+    document.getElementById('r_correo_entidad').textContent = data.correo_entidad || '(no detectado)';
+    document.getElementById('r_asunto_correo').textContent = data.asunto_correo || '';
+    document.getElementById('r_texto_legal').value = data.texto_legal || '';
+
+    const warningBox = document.getElementById('warningBox');
+    if (data.requiere_verificacion_entidad) {
+      warningBox.textContent = data.mensaje || 'Verifica la entidad antes de continuar.';
+      show('warningBox');
+      document.getElementById('statusPill').textContent = 'requiere revisión';
+      document.getElementById('statusPill').classList.remove('ok');
+    } else {
+      hide('warningBox');
+      document.getElementById('statusPill').textContent = 'lista';
+      document.getElementById('statusPill').classList.add('ok');
+    }
+
+    hide('step1');
+    show('step2');
+
+  } catch (e) {
+    const err = document.getElementById('error1');
+    err.textContent = 'Ocurrió un error al generar la solicitud: ' + e.message;
+    show('error1');
+  } finally {
+    document.getElementById('btnGenerar').disabled = false;
+    hide('loading1');
+  }
+}
+
+function volverAEditar() {
+  hide('step2');
+  show('step1');
+}
+
+async function confirmarYGuardar() {
+  hide('error2');
+  show('loading2');
+
+  const textoFinal = document.getElementById('r_texto_legal').value;
+
+  try {
+    const resp = await fetch(WEBHOOK_RAMA2, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        entidad: resultadoActual.entidad,
+        correo_entidad: resultadoActual.correo_entidad,
+        asunto_correo: resultadoActual.asunto_correo,
+        texto_legal: textoFinal,
+        nombre: datosUsuario.nombre,
+        dni: datosUsuario.dni,
+        domicilio: datosUsuario.domicilio,
+        correo_contacto: datosUsuario.correo
+      })
+    });
+
+    if (!resp.ok) {
+      throw new Error('El servidor respondió con error ' + resp.status);
+    }
+
+    const data = await resp.json();
+
+    let enlace = data.enlace_gmail;
+    if (!enlace) {
+      // Construir el enlace localmente como respaldo si Airtable no lo devuelve
+      const to = encodeURIComponent(resultadoActual.correo_entidad || '');
+      const su = encodeURIComponent(resultadoActual.asunto_correo || '');
+      const body = encodeURIComponent(textoFinal || '');
+      enlace = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${su}&body=${body}`;
+    }
+
+    document.getElementById('btnGmail').href = enlace;
+
+    hide('step2');
+    show('step3');
+
+  } catch (e) {
+    const err = document.getElementById('error2');
+    err.textContent = 'Ocurrió un error al guardar: ' + e.message;
+    show('error2');
+  } finally {
+    hide('loading2');
+  }
+}
+
+function reiniciar() {
+  document.getElementById('pedido').value = '';
+  document.getElementById('nombre').value = '';
+  document.getElementById('dni').value = '';
+  document.getElementById('domicilio').value = '';
+  document.getElementById('correo').value = '';
+  descartarAudio();
+  cambiarModo('texto');
+  resultadoActual = null;
+  datosUsuario = null;
+  hide('step3');
+  hide('step2');
+  show('step1');
+}
+</script>
+</body>
+</html>
